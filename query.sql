@@ -1,22 +1,27 @@
--- name: GetPerson :one
-SELECT * FROM mv_people
+-- name: GetMovie :one
+SELECT * FROM mv_movie
 WHERE id = $1 LIMIT 1;
 
--- name: GetPeople :many
-SELECT * FROM mv_people
-ORDER BY first_name;
+-- name: GetMovies :many
+SELECT * FROM mv_movie
+ORDER BY title;
 
--- name: CreatePerson :one
-INSERT INTO mv_people
-(id, first_name, last_name, gender)
+-- name: CreateMovie :one
+INSERT INTO mv_movie
+(title, description, poster_image, poster_ext, release_date, language, country_origin)
 VALUES
-($1, $2, $3, $4)
+($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
--- name: DeletePerson :exec
-DELETE FROM mv_people
-WHERE id = $1;
+-- name: UpdateMovie :exec
+UPDATE mv_movie
+SET 
+    title = CASE WHEN @title_do_update::boolean
+        THEN @title::VARCHAR(50) ELSE title END
+WHERE
+    id = @id
+RETURNING *;
 
--- name: TotalMalePeople :one
-SELECT COUNT(*) FROM mv_people
-WHERE gender = 'M';
+-- name: DeleteMovie :exec
+DELETE FROM mv_movie
+WHERE id = $1;

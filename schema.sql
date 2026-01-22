@@ -3,20 +3,13 @@ DROP TABLE IF EXISTS ST_room_seats CASCADE;
 DROP TABLE IF EXISTS ST_showtime_rooms CASCADE;
 DROP TABLE IF EXISTS ST_showtime CASCADE;
 DROP TABLE IF EXISTS SY_user_roles CASCADE;
-DROP TABLE IF EXISTS MV_movie_staff CASCADE;
 DROP TABLE IF EXISTS MV_movie_genres CASCADE;
 DROP TABLE IF EXISTS ST_seat CASCADE;
 DROP TABLE IF EXISTS ST_room CASCADE;
 DROP TABLE IF EXISTS SY_role CASCADE;
 DROP TABLE IF EXISTS SY_user CASCADE;
-DROP TABLE IF EXISTS MV_role CASCADE;
-DROP TABLE IF EXISTS MV_people CASCADE;
 DROP TABLE IF EXISTS MV_genre CASCADE;
 DROP TABLE IF EXISTS MV_movie CASCADE;
-
-DROP TYPE IF EXISTS gender_enum CASCADE;
-
-CREATE TYPE gender_enum AS ENUM ('M', 'F');
 
 CREATE TABLE MV_movie (
     id UUID PRIMARY KEY,
@@ -34,18 +27,6 @@ COMMENT ON COLUMN MV_movie.poster_image IS 'filename';
 COMMENT ON COLUMN MV_movie.poster_ext IS 'extension';
 
 CREATE TABLE MV_genre (
-    id UUID PRIMARY KEY,
-    title VARCHAR(50)
-);
-
-CREATE TABLE MV_people (
-    id UUID PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    gender gender_enum
-);
-
-CREATE TABLE MV_role (
     id UUID PRIMARY KEY,
     title VARCHAR(50)
 );
@@ -81,17 +62,6 @@ CREATE TABLE MV_movie_genres (
     CONSTRAINT fk_mv_genres_movie FOREIGN KEY (movie_id) REFERENCES MV_movie(id),
     CONSTRAINT fk_mv_genres_genre FOREIGN KEY (genre_id) REFERENCES MV_genre(id)
 );
-
-CREATE TABLE MV_movie_staff (
-    person_id UUID,
-    movie_id UUID,
-    role_id UUID,
-    character_name VARCHAR(100),
-    CONSTRAINT fk_mv_staff_person FOREIGN KEY (person_id) REFERENCES MV_people(id),
-    CONSTRAINT fk_mv_staff_movie FOREIGN KEY (movie_id) REFERENCES MV_movie(id),
-    CONSTRAINT fk_mv_staff_role FOREIGN KEY (role_id) REFERENCES MV_role(id)
-);
-COMMENT ON COLUMN MV_movie_staff.character_name IS 'Nullable for crew roles';
 
 CREATE TABLE SY_user_roles (
     user_id UUID,

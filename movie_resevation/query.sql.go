@@ -12,67 +12,105 @@ import (
 	"github.com/google/uuid"
 )
 
-const createPerson = `-- name: CreatePerson :one
-INSERT INTO mv_people
-(id, first_name, last_name, gender)
+const createMovie = `-- name: CreateMovie :one
+INSERT INTO mv_movie
+(title, description, poster_image, poster_ext, release_date, language, country_origin)
 VALUES
-($1, $2, $3, $4)
-RETURNING id, first_name, last_name, gender
+($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin
 `
 
-type CreatePersonParams struct {
-	ID        uuid.UUID
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Gender    NullGenderEnum
+type CreateMovieParams struct {
+	Title         sql.NullString
+	Description   sql.NullString
+	PosterImage   sql.NullString
+	PosterExt     sql.NullString
+	ReleaseDate   sql.NullTime
+	Language      sql.NullString
+	CountryOrigin sql.NullString
 }
 
-func (q *Queries) CreatePerson(ctx context.Context, arg CreatePersonParams) (MvPerson, error) {
-	row := q.db.QueryRowContext(ctx, createPerson,
-		arg.ID,
-		arg.FirstName,
-		arg.LastName,
-		arg.Gender,
+func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (MvMovie, error) {
+	row := q.db.QueryRowContext(ctx, createMovie,
+		arg.Title,
+		arg.Description,
+		arg.PosterImage,
+		arg.PosterExt,
+		arg.ReleaseDate,
+		arg.Language,
+		arg.CountryOrigin,
 	)
-	var i MvPerson
+	var i MvMovie
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
-		&i.Gender,
+		&i.Title,
+		&i.Description,
+		&i.PosterImage,
+		&i.PosterExt,
+		&i.Minutes,
+		&i.ReleaseDate,
+		&i.Language,
+		&i.CountryOrigin,
 	)
 	return i, err
 }
 
-const deletePerson = `-- name: DeletePerson :exec
-DELETE FROM mv_people
+const deleteMovie = `-- name: DeleteMovie :exec
+DELETE FROM mv_movie
 WHERE id = $1
 `
 
-func (q *Queries) DeletePerson(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deletePerson, id)
+func (q *Queries) DeleteMovie(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteMovie, id)
 	return err
 }
 
-const getPeople = `-- name: GetPeople :many
-SELECT id, first_name, last_name, gender FROM mv_people
-ORDER BY first_name
+const getMovie = `-- name: GetMovie :one
+SELECT id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin FROM mv_movie
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetPeople(ctx context.Context) ([]MvPerson, error) {
-	rows, err := q.db.QueryContext(ctx, getPeople)
+func (q *Queries) GetMovie(ctx context.Context, id uuid.UUID) (MvMovie, error) {
+	row := q.db.QueryRowContext(ctx, getMovie, id)
+	var i MvMovie
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.PosterImage,
+		&i.PosterExt,
+		&i.Minutes,
+		&i.ReleaseDate,
+		&i.Language,
+		&i.CountryOrigin,
+	)
+	return i, err
+}
+
+const getMovies = `-- name: GetMovies :many
+SELECT id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin FROM mv_movie
+ORDER BY title
+`
+
+func (q *Queries) GetMovies(ctx context.Context) ([]MvMovie, error) {
+	rows, err := q.db.QueryContext(ctx, getMovies)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MvPerson
+	var items []MvMovie
 	for rows.Next() {
-		var i MvPerson
+		var i MvMovie
 		if err := rows.Scan(
 			&i.ID,
-			&i.FirstName,
-			&i.LastName,
-			&i.Gender,
+			&i.Title,
+			&i.Description,
+			&i.PosterImage,
+			&i.PosterExt,
+			&i.Minutes,
+			&i.ReleaseDate,
+			&i.Language,
+			&i.CountryOrigin,
 		); err != nil {
 			return nil, err
 		}
@@ -87,31 +125,23 @@ func (q *Queries) GetPeople(ctx context.Context) ([]MvPerson, error) {
 	return items, nil
 }
 
-const getPerson = `-- name: GetPerson :one
-SELECT id, first_name, last_name, gender FROM mv_people
-WHERE id = $1 LIMIT 1
+const updateMovie = `-- name: UpdateMovie :exec
+UPDATE mv_movie
+SET 
+    title = CASE WHEN $1::boolean
+        THEN $2::VARCHAR(50) ELSE title END
+WHERE
+    id = $3
+RETURNING id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin
 `
 
-func (q *Queries) GetPerson(ctx context.Context, id uuid.UUID) (MvPerson, error) {
-	row := q.db.QueryRowContext(ctx, getPerson, id)
-	var i MvPerson
-	err := row.Scan(
-		&i.ID,
-		&i.FirstName,
-		&i.LastName,
-		&i.Gender,
-	)
-	return i, err
+type UpdateMovieParams struct {
+	TitleDoUpdate bool
+	Title         string
+	ID            uuid.UUID
 }
 
-const totalMalePeople = `-- name: TotalMalePeople :one
-SELECT COUNT(*) FROM mv_people
-WHERE gender = 'M'
-`
-
-func (q *Queries) TotalMalePeople(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, totalMalePeople)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error {
+	_, err := q.db.ExecContext(ctx, updateMovie, arg.TitleDoUpdate, arg.Title, arg.ID)
+	return err
 }

@@ -28,13 +28,13 @@ func main() {
 	queries := movie_resevation.New(db)
 
 	// Repositories
-	PersonRepository := repository.NewPersonRepository(&ctx, queries)
+	MovieRepository := repository.NewMovieRepository(&ctx, queries)
 
 	// Usecases
-	PersonUseCase := usecase.NewPersonUseCase(PersonRepository)
+	MovieUseCase := usecase.NewMovieUseCase(MovieRepository)
 
 	// Controllers
-	PersonController := controller.NewPersonController(PersonUseCase)
+	MovieController := controller.NewMovieController(MovieUseCase)
 
 	// Routes
 	server.GET("/health", func(ginCtx *gin.Context) {
@@ -43,7 +43,7 @@ func main() {
 		})
 	})
 
-	server.GET("/people", PersonController.GetPeople)
+	server.GET("/movies", MovieController.GetMovies)
 
 	// Initialize Server
 	server.Run(":8080")
