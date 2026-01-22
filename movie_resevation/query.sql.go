@@ -13,7 +13,7 @@ import (
 )
 
 const createPerson = `-- name: CreatePerson :one
-INSERT INTO mv_person
+INSERT INTO mv_people
 (id, first_name, last_name, gender)
 VALUES
 ($1, $2, $3, $4)
@@ -45,7 +45,7 @@ func (q *Queries) CreatePerson(ctx context.Context, arg CreatePersonParams) (MvP
 }
 
 const deletePerson = `-- name: DeletePerson :exec
-DELETE FROM mv_person
+DELETE FROM mv_people
 WHERE id = $1
 `
 
@@ -54,30 +54,13 @@ func (q *Queries) DeletePerson(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getPerson = `-- name: GetPerson :one
-SELECT id, first_name, last_name, gender FROM mv_person
-WHERE id = $1 LIMIT 1
-`
-
-func (q *Queries) GetPerson(ctx context.Context, id uuid.UUID) (MvPerson, error) {
-	row := q.db.QueryRowContext(ctx, getPerson, id)
-	var i MvPerson
-	err := row.Scan(
-		&i.ID,
-		&i.FirstName,
-		&i.LastName,
-		&i.Gender,
-	)
-	return i, err
-}
-
-const listPeople = `-- name: ListPeople :many
-SELECT id, first_name, last_name, gender FROM mv_person
+const getPeople = `-- name: GetPeople :many
+SELECT id, first_name, last_name, gender FROM mv_people
 ORDER BY first_name
 `
 
-func (q *Queries) ListPeople(ctx context.Context) ([]MvPerson, error) {
-	rows, err := q.db.QueryContext(ctx, listPeople)
+func (q *Queries) GetPeople(ctx context.Context) ([]MvPerson, error) {
+	rows, err := q.db.QueryContext(ctx, getPeople)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +87,25 @@ func (q *Queries) ListPeople(ctx context.Context) ([]MvPerson, error) {
 	return items, nil
 }
 
+const getPerson = `-- name: GetPerson :one
+SELECT id, first_name, last_name, gender FROM mv_people
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetPerson(ctx context.Context, id uuid.UUID) (MvPerson, error) {
+	row := q.db.QueryRowContext(ctx, getPerson, id)
+	var i MvPerson
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Gender,
+	)
+	return i, err
+}
+
 const totalMalePeople = `-- name: TotalMalePeople :one
-SELECT COUNT(*) FROM mv_person
+SELECT COUNT(*) FROM mv_people
 WHERE gender = 'M'
 `
 

@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS ST_room CASCADE;
 DROP TABLE IF EXISTS SY_role CASCADE;
 DROP TABLE IF EXISTS SY_user CASCADE;
 DROP TABLE IF EXISTS MV_role CASCADE;
-DROP TABLE IF EXISTS MV_person CASCADE;
+DROP TABLE IF EXISTS MV_people CASCADE;
 DROP TABLE IF EXISTS MV_genre CASCADE;
 DROP TABLE IF EXISTS MV_movie CASCADE;
 
@@ -38,7 +38,7 @@ CREATE TABLE MV_genre (
     title VARCHAR(50)
 );
 
-CREATE TABLE MV_person (
+CREATE TABLE MV_people (
     id UUID PRIMARY KEY,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
@@ -87,7 +87,7 @@ CREATE TABLE MV_movie_staff (
     movie_id UUID,
     role_id UUID,
     character_name VARCHAR(100),
-    CONSTRAINT fk_mv_staff_person FOREIGN KEY (person_id) REFERENCES MV_person(id),
+    CONSTRAINT fk_mv_staff_person FOREIGN KEY (person_id) REFERENCES MV_people(id),
     CONSTRAINT fk_mv_staff_movie FOREIGN KEY (movie_id) REFERENCES MV_movie(id),
     CONSTRAINT fk_mv_staff_role FOREIGN KEY (role_id) REFERENCES MV_role(id)
 );
