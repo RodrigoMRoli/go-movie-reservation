@@ -19,125 +19,129 @@ func NewMovieController(movieUseCase usecase.MovieUseCase) movieController {
 	}
 }
 
-func (mc *movieController) GetMovies(ctx *gin.Context) {
-	movies, err := mc.movieUseCase.GetMovies()
+func (mc *movieController) GetMovies(c *gin.Context) {
+	ctx := c.Request.Context()
+	movies, err := mc.movieUseCase.GetMovies(&ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, movies)
+	c.JSON(http.StatusOK, movies)
 }
 
-func (mc *movieController) GetMovie(ctx *gin.Context) {
-	ctxId := ctx.Param("movieId")
-	if ctxId == "" {
+func (mc *movieController) GetMovie(c *gin.Context) {
+	ctx := c.Request.Context()
+	paramsId := c.Param("movieId")
+	if paramsId == "" {
 		response := model.Response{
 			Message: "Id cannot be null",
 		}
-		ctx.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	id, err := uuid.Parse(ctxId)
+	id, err := uuid.Parse(paramsId)
 	if err != nil {
 		response := model.Response{
 			Message: "Id is invalid",
 		}
-		ctx.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	movie, err := mc.movieUseCase.GetMovie(id)
+	movie, err := mc.movieUseCase.GetMovie(&ctx, id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, movie)
+	c.JSON(http.StatusOK, movie)
 }
 
-func (mc *movieController) CreateMovie(ctx *gin.Context) {
-
+func (mc *movieController) CreateMovie(c *gin.Context) {
+	ctx := c.Request.Context()
 	var input model.CreateMovieInput
-	if err := ctx.BindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+	if err := c.BindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	newMovie, err := mc.movieUseCase.CreateMovie(input)
+	newMovie, err := mc.movieUseCase.CreateMovie(&ctx, input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, newMovie)
+	c.JSON(http.StatusOK, newMovie)
 }
 
-func (mc *movieController) UpdateMovie(ctx *gin.Context) {
-	ctxId := ctx.Param("movieId")
-	if ctxId == "" {
+func (mc *movieController) UpdateMovie(c *gin.Context) {
+	ctx := c.Request.Context()
+	paramsId := c.Param("movieId")
+	if paramsId == "" {
 		response := model.Response{
 			Message: "Id cannot be null",
 		}
-		ctx.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	id, uuidErr := uuid.Parse(ctxId)
+	id, uuidErr := uuid.Parse(paramsId)
 	if uuidErr != nil {
 		response := model.Response{
 			Message: "Id is invalid",
 		}
-		ctx.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	var input model.CreateMovieInput
-	if err := ctx.BindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+	if err := c.BindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	newMovie, err := mc.movieUseCase.UpdateMovie(id, input)
+	newMovie, err := mc.movieUseCase.UpdateMovie(&ctx, id, input)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, newMovie)
+	c.JSON(http.StatusOK, newMovie)
 }
 
-func (mc *movieController) DeleteMovie(ctx *gin.Context) {
-	ctxId := ctx.Param("movieId")
-	if ctxId == "" {
+func (mc *movieController) DeleteMovie(c *gin.Context) {
+	ctx := c.Request.Context()
+	paramsId := c.Param("movieId")
+	if paramsId == "" {
 		response := model.Response{
 			Message: "Id cannot be null",
 		}
-		ctx.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	id, err := uuid.Parse(ctxId)
+	id, err := uuid.Parse(paramsId)
 	if err != nil {
 		response := model.Response{
 			Message: "Id is invalid",
 		}
-		ctx.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
-	deleteErr := mc.movieUseCase.DeleteMovie(id)
+	deleteErr := mc.movieUseCase.DeleteMovie(&ctx, id)
 	if deleteErr != nil {
-		ctx.JSON(http.StatusInternalServerError, deleteErr)
+		c.JSON(http.StatusInternalServerError, deleteErr)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, model.Response{
+	c.JSON(http.StatusOK, model.Response{
 		Message: "Movie deleted successfully",
 	})
 }

@@ -14,21 +14,19 @@ import (
 
 type MovieRepository struct {
 	store   *db.SQLStore
-	ctx     *context.Context
-	queries *movie_resevation.Queries
+	queries movie_resevation.Querier
 }
 
-func NewMovieRepository(store *db.SQLStore, ctx *context.Context, queries *movie_resevation.Queries) MovieRepository {
+func NewMovieRepository(store *db.SQLStore, queries movie_resevation.Querier) MovieRepository {
 	return MovieRepository{
 		store:   store,
-		ctx:     ctx,
 		queries: queries,
 	}
 }
 
-func (mr *MovieRepository) GetMovies() ([]model.MovieWithGenre, error) {
+func (mr *MovieRepository) GetMovies(ctx *context.Context) ([]model.MovieWithGenre, error) {
 
-	rows, err := mr.queries.GetMovies(*mr.ctx)
+	rows, err := mr.queries.GetMovies(*ctx)
 	if err != nil {
 		fmt.Println(err)
 		return []model.MovieWithGenre{}, nil
@@ -62,9 +60,9 @@ func (mr *MovieRepository) GetMovies() ([]model.MovieWithGenre, error) {
 	return movies, nil
 }
 
-func (mr *MovieRepository) GetMovie(id uuid.UUID) (model.MovieWithGenre, error) {
+func (mr *MovieRepository) GetMovie(ctx *context.Context, id uuid.UUID) (model.MovieWithGenre, error) {
 
-	m, err := mr.queries.GetMovie(*mr.ctx, id)
+	m, err := mr.queries.GetMovie(*ctx, id)
 	if err != nil {
 		fmt.Println(err)
 		return model.MovieWithGenre{}, nil
@@ -93,12 +91,13 @@ func (mr *MovieRepository) GetMovie(id uuid.UUID) (model.MovieWithGenre, error) 
 }
 
 func (mr *MovieRepository) CreateMovie(
+	ctx *context.Context,
 	params model.CreateMovieInput,
 ) (model.MovieWithGenre, error) {
 	// deal with image management later
 	// deal with transaction later if seem fit
 
-	m, mErr := mr.queries.CreateMovie(*mr.ctx, movie_resevation.CreateMovieParams{
+	m, mErr := mr.queries.CreateMovie(*ctx, movie_resevation.CreateMovieParams{
 		Title: sql.NullString{
 			String: params.Title,
 			Valid:  true,
@@ -145,14 +144,14 @@ func (mr *MovieRepository) CreateMovie(
 				Valid: true,
 			},
 		}
-		gErr := mr.queries.AddGenreToMovie(*mr.ctx, genreMovieRow)
+		gErr := mr.queries.AddGenreToMovie(*ctx, genreMovieRow)
 		if gErr != nil {
 			fmt.Println(gErr)
 			return model.MovieWithGenre{}, gErr
 		}
 	}
 
-	newMovie, err := mr.GetMovie(m.ID)
+	newMovie, err := mr.GetMovie(ctx, m.ID)
 	if err != nil {
 		fmt.Println(err)
 		return model.MovieWithGenre{}, err
@@ -162,6 +161,7 @@ func (mr *MovieRepository) CreateMovie(
 }
 
 func (mr *MovieRepository) UpdateMovie(
+	ctx *context.Context,
 	id uuid.UUID,
 	params model.CreateMovieInput,
 ) (model.MovieWithGenre, error) {
@@ -178,13 +178,13 @@ func (mr *MovieRepository) UpdateMovie(
 		CountryOrigin: sql.NullString{String: params.CountryOrigin, Valid: params.CountryOrigin != ""},
 	}
 
-	err := mr.queries.UpdateMovie(*mr.ctx, args)
+	err := mr.queries.UpdateMovie(*ctx, args)
 	if err != nil {
 		fmt.Println(err)
 		return model.MovieWithGenre{}, err
 	}
 
-	updatedMovie, err := mr.GetMovie(id)
+	updatedMovie, err := mr.GetMovie(ctx, id)
 	if err != nil {
 		fmt.Println(err)
 		return model.MovieWithGenre{}, err
@@ -193,8 +193,8 @@ func (mr *MovieRepository) UpdateMovie(
 	return updatedMovie, nil
 }
 
-func (mr *MovieRepository) DeleteMovie(id uuid.UUID) error {
-	err := mr.queries.DeleteMovie(*mr.ctx, id)
+func (mr *MovieRepository) DeleteMovie(ctx *context.Context, id uuid.UUID) error {
+	err := mr.queries.DeleteMovie(*ctx, id)
 	if err != nil {
 		fmt.Println(err)
 		return err

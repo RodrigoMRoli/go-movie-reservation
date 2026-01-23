@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"go-movie-reservation/controller"
@@ -25,11 +24,10 @@ func main() {
 	defer database.Close()
 
 	store := db.NewStore(database)
-	ctx := context.Background()
 	queries := movie_resevation.New(database)
 
 	// Repositories
-	MovieRepository := repository.NewMovieRepository(store, &ctx, queries)
+	MovieRepository := repository.NewMovieRepository(store, queries)
 
 	// Usecases
 	MovieUseCase := usecase.NewMovieUseCase(MovieRepository)
@@ -38,8 +36,8 @@ func main() {
 	MovieController := controller.NewMovieController(MovieUseCase)
 
 	// Routes
-	server.GET("/health", func(ginCtx *gin.Context) {
-		ginCtx.JSON(200, gin.H{
+	server.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
 			"message": "Everything is fine",
 		})
 	})
