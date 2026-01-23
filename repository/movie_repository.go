@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"go-movie-reservation/db"
 	"go-movie-reservation/model"
 	"go-movie-reservation/movie_resevation"
 	"time"
@@ -13,13 +12,11 @@ import (
 )
 
 type MovieRepository struct {
-	store   *db.SQLStore
 	queries movie_resevation.Querier
 }
 
-func NewMovieRepository(store *db.SQLStore, queries movie_resevation.Querier) MovieRepository {
+func NewMovieRepository(queries movie_resevation.Querier) MovieRepository {
 	return MovieRepository{
-		store:   store,
 		queries: queries,
 	}
 }

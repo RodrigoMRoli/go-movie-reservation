@@ -23,11 +23,10 @@ func main() {
 
 	defer database.Close()
 
-	store := db.NewStore(database)
 	queries := movie_resevation.New(database)
 
 	// Repositories
-	MovieRepository := repository.NewMovieRepository(store, queries)
+	MovieRepository := repository.NewMovieRepository(queries)
 
 	// Usecases
 	MovieUseCase := usecase.NewMovieUseCase(MovieRepository)
