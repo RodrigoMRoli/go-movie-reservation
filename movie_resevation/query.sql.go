@@ -10,7 +10,40 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
+
+const addGenreToMovie = `-- name: AddGenreToMovie :exec
+INSERT INTO mv_movie_genres 
+(movie_id, genre_id)
+VALUES
+($1, $2)
+`
+
+type AddGenreToMovieParams struct {
+	MovieID uuid.NullUUID `json:"movie_id"`
+	GenreID uuid.NullUUID `json:"genre_id"`
+}
+
+func (q *Queries) AddGenreToMovie(ctx context.Context, arg AddGenreToMovieParams) error {
+	_, err := q.db.ExecContext(ctx, addGenreToMovie, arg.MovieID, arg.GenreID)
+	return err
+}
+
+const createGenre = `-- name: CreateGenre :one
+INSERT INTO mv_genre 
+(title)
+VALUES
+($1)
+RETURNING id, title
+`
+
+func (q *Queries) CreateGenre(ctx context.Context, title sql.NullString) (MvGenre, error) {
+	row := q.db.QueryRowContext(ctx, createGenre, title)
+	var i MvGenre
+	err := row.Scan(&i.ID, &i.Title)
+	return i, err
+}
 
 const createMovie = `-- name: CreateMovie :one
 INSERT INTO mv_movie
@@ -21,13 +54,13 @@ RETURNING id, title, description, poster_image, poster_ext, minutes, release_dat
 `
 
 type CreateMovieParams struct {
-	Title         sql.NullString
-	Description   sql.NullString
-	PosterImage   sql.NullString
-	PosterExt     sql.NullString
-	ReleaseDate   sql.NullTime
-	Language      sql.NullString
-	CountryOrigin sql.NullString
+	Title         sql.NullString `json:"title"`
+	Description   sql.NullString `json:"description"`
+	PosterImage   sql.NullString `json:"poster_image"`
+	PosterExt     sql.NullString `json:"poster_ext"`
+	ReleaseDate   sql.NullTime   `json:"release_date"`
+	Language      sql.NullString `json:"language"`
+	CountryOrigin sql.NullString `json:"country_origin"`
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (MvMovie, error) {
@@ -55,6 +88,16 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (MvMov
 	return i, err
 }
 
+const deleteGenre = `-- name: DeleteGenre :exec
+DELETE FROM mv_genre
+WHERE id = $1
+`
+
+func (q *Queries) DeleteGenre(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteGenre, id)
+	return err
+}
+
 const deleteMovie = `-- name: DeleteMovie :exec
 DELETE FROM mv_movie
 WHERE id = $1
@@ -66,13 +109,36 @@ func (q *Queries) DeleteMovie(ctx context.Context, id uuid.UUID) error {
 }
 
 const getMovie = `-- name: GetMovie :one
-SELECT id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin FROM mv_movie
-WHERE id = $1 LIMIT 1
+SELECT m.id, m.title, m.description, m.poster_image, m.poster_ext, m.minutes, m.release_date, m.language, m.country_origin, 
+    COALESCE(
+        (
+            SELECT array_agg(g.title)
+            FROM mv_genre g
+            JOIN mv_movie_genres mg ON g.id = mg.genre_id
+            WHERE mg.movie_id = m.id
+        ), 
+        '{}'::text[]
+    )::text[] as genres
+FROM mv_movie m
+WHERE m.id = $1 LIMIT 1
 `
 
-func (q *Queries) GetMovie(ctx context.Context, id uuid.UUID) (MvMovie, error) {
+type GetMovieRow struct {
+	ID            uuid.UUID      `json:"id"`
+	Title         sql.NullString `json:"title"`
+	Description   sql.NullString `json:"description"`
+	PosterImage   sql.NullString `json:"poster_image"`
+	PosterExt     sql.NullString `json:"poster_ext"`
+	Minutes       sql.NullInt32  `json:"minutes"`
+	ReleaseDate   sql.NullTime   `json:"release_date"`
+	Language      sql.NullString `json:"language"`
+	CountryOrigin sql.NullString `json:"country_origin"`
+	Genres        []string       `json:"genres"`
+}
+
+func (q *Queries) GetMovie(ctx context.Context, id uuid.UUID) (GetMovieRow, error) {
 	row := q.db.QueryRowContext(ctx, getMovie, id)
-	var i MvMovie
+	var i GetMovieRow
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
@@ -83,24 +149,48 @@ func (q *Queries) GetMovie(ctx context.Context, id uuid.UUID) (MvMovie, error) {
 		&i.ReleaseDate,
 		&i.Language,
 		&i.CountryOrigin,
+		pq.Array(&i.Genres),
 	)
 	return i, err
 }
 
 const getMovies = `-- name: GetMovies :many
-SELECT id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin FROM mv_movie
+SELECT m.id, m.title, m.description, m.poster_image, m.poster_ext, m.minutes, m.release_date, m.language, m.country_origin, 
+    COALESCE(
+        (
+            SELECT array_agg(g.title)
+            FROM mv_genre g
+            JOIN mv_movie_genres mg ON g.id = mg.genre_id
+            WHERE mg.movie_id = m.id
+        ), 
+        '{}'::text[]
+    )::text[] as genres
+FROM mv_movie m
 ORDER BY title
 `
 
-func (q *Queries) GetMovies(ctx context.Context) ([]MvMovie, error) {
+type GetMoviesRow struct {
+	ID            uuid.UUID      `json:"id"`
+	Title         sql.NullString `json:"title"`
+	Description   sql.NullString `json:"description"`
+	PosterImage   sql.NullString `json:"poster_image"`
+	PosterExt     sql.NullString `json:"poster_ext"`
+	Minutes       sql.NullInt32  `json:"minutes"`
+	ReleaseDate   sql.NullTime   `json:"release_date"`
+	Language      sql.NullString `json:"language"`
+	CountryOrigin sql.NullString `json:"country_origin"`
+	Genres        []string       `json:"genres"`
+}
+
+func (q *Queries) GetMovies(ctx context.Context) ([]GetMoviesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getMovies)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []MvMovie
+	var items []GetMoviesRow
 	for rows.Next() {
-		var i MvMovie
+		var i GetMoviesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
@@ -111,6 +201,7 @@ func (q *Queries) GetMovies(ctx context.Context) ([]MvMovie, error) {
 			&i.ReleaseDate,
 			&i.Language,
 			&i.CountryOrigin,
+			pq.Array(&i.Genres),
 		); err != nil {
 			return nil, err
 		}
@@ -125,23 +216,59 @@ func (q *Queries) GetMovies(ctx context.Context) ([]MvMovie, error) {
 	return items, nil
 }
 
+const removeGenreFromMovie = `-- name: RemoveGenreFromMovie :exec
+DELETE FROM mv_movie_genres
+WHERE movie_id = $1 AND genre_id = $2
+`
+
+type RemoveGenreFromMovieParams struct {
+	MovieID uuid.NullUUID `json:"movie_id"`
+	GenreID uuid.NullUUID `json:"genre_id"`
+}
+
+func (q *Queries) RemoveGenreFromMovie(ctx context.Context, arg RemoveGenreFromMovieParams) error {
+	_, err := q.db.ExecContext(ctx, removeGenreFromMovie, arg.MovieID, arg.GenreID)
+	return err
+}
+
 const updateMovie = `-- name: UpdateMovie :exec
 UPDATE mv_movie
 SET 
-    title = CASE WHEN $1::boolean
-        THEN $2::VARCHAR(50) ELSE title END
+    title          = COALESCE($1, title),
+    description    = COALESCE($2, description),
+    poster_image   = COALESCE($3, poster_image),
+    poster_ext     = COALESCE($4, poster_ext),
+    minutes        = COALESCE($5, minutes),
+    release_date   = COALESCE($6, release_date),
+    language       = COALESCE($7, language),
+    country_origin = COALESCE($8, country_origin)
 WHERE
-    id = $3
-RETURNING id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin
+    id = $9
 `
 
 type UpdateMovieParams struct {
-	TitleDoUpdate bool
-	Title         string
-	ID            uuid.UUID
+	Title         sql.NullString `json:"title"`
+	Description   sql.NullString `json:"description"`
+	PosterImage   sql.NullString `json:"poster_image"`
+	PosterExt     sql.NullString `json:"poster_ext"`
+	Minutes       sql.NullInt32  `json:"minutes"`
+	ReleaseDate   sql.NullTime   `json:"release_date"`
+	Language      sql.NullString `json:"language"`
+	CountryOrigin sql.NullString `json:"country_origin"`
+	ID            uuid.UUID      `json:"id"`
 }
 
 func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error {
-	_, err := q.db.ExecContext(ctx, updateMovie, arg.TitleDoUpdate, arg.Title, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateMovie,
+		arg.Title,
+		arg.Description,
+		arg.PosterImage,
+		arg.PosterExt,
+		arg.Minutes,
+		arg.ReleaseDate,
+		arg.Language,
+		arg.CountryOrigin,
+		arg.ID,
+	)
 	return err
 }

@@ -7,3 +7,5 @@ sql:
       go:
         package: "movie_resevation"
         out: "movie_resevation"
+        emit_json_tags: true
+        emit_interface: true

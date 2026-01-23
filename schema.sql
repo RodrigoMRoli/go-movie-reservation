@@ -59,8 +59,15 @@ CREATE TABLE ST_seat (
 CREATE TABLE MV_movie_genres (
     movie_id UUID,
     genre_id UUID,
-    CONSTRAINT fk_mv_genres_movie FOREIGN KEY (movie_id) REFERENCES MV_movie(id),
-    CONSTRAINT fk_mv_genres_genre FOREIGN KEY (genre_id) REFERENCES MV_genre(id)
+
+    CONSTRAINT fk_mv_genres_movie 
+        FOREIGN KEY (movie_id) 
+        REFERENCES MV_movie(id) 
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_mv_genres_genre 
+        FOREIGN KEY (genre_id) 
+        REFERENCES MV_genre(id)
 );
 
 CREATE TABLE SY_user_roles (

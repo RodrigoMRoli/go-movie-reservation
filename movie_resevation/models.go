@@ -11,85 +11,85 @@ import (
 )
 
 type MvGenre struct {
-	ID    uuid.UUID
-	Title sql.NullString
+	ID    uuid.UUID      `json:"id"`
+	Title sql.NullString `json:"title"`
 }
 
 type MvMovie struct {
-	ID          uuid.UUID
-	Title       sql.NullString
-	Description sql.NullString
+	ID          uuid.UUID      `json:"id"`
+	Title       sql.NullString `json:"title"`
+	Description sql.NullString `json:"description"`
 	// filename
-	PosterImage sql.NullString
+	PosterImage sql.NullString `json:"poster_image"`
 	// extension
-	PosterExt     sql.NullString
-	Minutes       sql.NullInt32
-	ReleaseDate   sql.NullTime
-	Language      sql.NullString
-	CountryOrigin sql.NullString
+	PosterExt     sql.NullString `json:"poster_ext"`
+	Minutes       sql.NullInt32  `json:"minutes"`
+	ReleaseDate   sql.NullTime   `json:"release_date"`
+	Language      sql.NullString `json:"language"`
+	CountryOrigin sql.NullString `json:"country_origin"`
 }
 
 type MvMovieGenre struct {
-	MovieID uuid.NullUUID
-	GenreID uuid.NullUUID
+	MovieID uuid.NullUUID `json:"movie_id"`
+	GenreID uuid.NullUUID `json:"genre_id"`
 }
 
 type StRoom struct {
-	ID    uuid.UUID
-	Title sql.NullString
+	ID    uuid.UUID      `json:"id"`
+	Title sql.NullString `json:"title"`
 }
 
 type StRoomSeat struct {
-	RoomID uuid.NullUUID
-	SeatID uuid.NullUUID
+	RoomID uuid.NullUUID `json:"room_id"`
+	SeatID uuid.NullUUID `json:"seat_id"`
 }
 
 type StSeat struct {
-	ID   uuid.UUID
-	Code sql.NullString
+	ID   uuid.UUID      `json:"id"`
+	Code sql.NullString `json:"code"`
 }
 
 type StShowtime struct {
-	ID             uuid.UUID
-	MovieID        uuid.NullUUID
-	Price          sql.NullString
-	StartTime      sql.NullTime
-	EndTime        sql.NullTime
-	AvailableSeats sql.NullInt32
+	ID             uuid.UUID      `json:"id"`
+	MovieID        uuid.NullUUID  `json:"movie_id"`
+	Price          sql.NullString `json:"price"`
+	StartTime      sql.NullTime   `json:"start_time"`
+	EndTime        sql.NullTime   `json:"end_time"`
+	AvailableSeats sql.NullInt32  `json:"available_seats"`
 }
 
 type StShowtimeRoom struct {
-	ShowtimeID uuid.NullUUID
-	RoomID     uuid.NullUUID
+	ShowtimeID uuid.NullUUID `json:"showtime_id"`
+	RoomID     uuid.NullUUID `json:"room_id"`
 }
 
 type StTicket struct {
-	ID         uuid.UUID
-	ShowtimeID uuid.NullUUID
-	RoomID     uuid.NullUUID
-	SeatID     uuid.NullUUID
-	UserID     uuid.NullUUID
-	FirstName  sql.NullString
-	LastName   sql.NullString
-	Paid       sql.NullString
+	ID         uuid.UUID      `json:"id"`
+	ShowtimeID uuid.NullUUID  `json:"showtime_id"`
+	RoomID     uuid.NullUUID  `json:"room_id"`
+	SeatID     uuid.NullUUID  `json:"seat_id"`
+	UserID     uuid.NullUUID  `json:"user_id"`
+	FirstName  sql.NullString `json:"first_name"`
+	LastName   sql.NullString `json:"last_name"`
+	Paid       sql.NullString `json:"paid"`
 }
 
 type SyRole struct {
-	ID    uuid.UUID
-	Title sql.NullString
+	ID    uuid.UUID      `json:"id"`
+	Title sql.NullString `json:"title"`
 }
 
 type SyUser struct {
-	ID         uuid.UUID
-	Email      sql.NullString
-	Password   sql.NullString
-	SaltRounds sql.NullInt32
-	FirstName  sql.NullString
-	LastName   sql.NullString
-	Birthdate  sql.NullTime
+	ID         uuid.UUID      `json:"id"`
+	Email      sql.NullString `json:"email"`
+	Password   sql.NullString `json:"password"`
+	SaltRounds sql.NullInt32  `json:"salt_rounds"`
+	FirstName  sql.NullString `json:"first_name"`
+	LastName   sql.NullString `json:"last_name"`
+	Birthdate  sql.NullTime   `json:"birthdate"`
 }
 
 type SyUserRole struct {
-	UserID uuid.NullUUID
-	RoleID uuid.NullUUID
+	UserID uuid.NullUUID `json:"user_id"`
+	RoleID uuid.NullUUID `json:"role_id"`
 }
