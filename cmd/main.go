@@ -45,6 +45,7 @@ func main() {
 	server.GET("/movies/:movieId", MovieController.GetMovie)
 	server.POST("/movies", MovieController.CreateMovie)
 	server.PATCH("/movies/:movieId", MovieController.UpdateMovie)
+	server.DELETE("/movies/:movieId", MovieController.DeleteMovie)
 
 	// Initialize Server
 	server.Run(":8080")
