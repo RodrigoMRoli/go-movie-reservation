@@ -17,18 +17,19 @@ func main() {
 
 	server := gin.Default()
 
-	db, dbErr := db.ConnectDB()
+	database, dbErr := db.ConnectDB()
 	if dbErr != nil {
 		fmt.Println(dbErr)
 	}
 
-	defer db.Close()
+	defer database.Close()
 
+	store := db.NewStore(database)
 	ctx := context.Background()
-	queries := movie_resevation.New(db)
+	queries := movie_resevation.New(database)
 
 	// Repositories
-	MovieRepository := repository.NewMovieRepository(&ctx, queries)
+	MovieRepository := repository.NewMovieRepository(store, &ctx, queries)
 
 	// Usecases
 	MovieUseCase := usecase.NewMovieUseCase(MovieRepository)
@@ -44,6 +45,9 @@ func main() {
 	})
 
 	server.GET("/movies", MovieController.GetMovies)
+	server.GET("/movies/:movieId", MovieController.GetMovie)
+	server.POST("/movies", MovieController.CreateMovie)
+	server.PATCH("/movies/:movieId", MovieController.UpdateMovie)
 
 	// Initialize Server
 	server.Run(":8080")
