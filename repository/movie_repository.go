@@ -3,18 +3,19 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"go-movie-reservation/helpers"
 	"go-movie-reservation/model"
 	"go-movie-reservation/movie_resevation"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 type MovieRepository struct {
-	queries movie_resevation.Querier
+	db      *sql.DB
+	queries movie_resevation.Queries
 }
 
-func NewMovieRepository(queries movie_resevation.Querier) MovieRepository {
+func NewMovieRepository(db *sql.DB, queries movie_resevation.Queries) MovieRepository {
 	return MovieRepository{
 		queries: queries,
 	}
@@ -37,7 +38,7 @@ func (mr *MovieRepository) GetMovies(ctx context.Context) ([]model.MovieWithGenr
 
 		movie := model.MovieWithGenre{
 			Movie: model.Movie{
-				ID:            m.ID.String(),
+				ID:            m.ID,
 				Title:         m.Title.String,
 				Description:   m.Description.String,
 				PosterImage:   m.PosterImage.String,
@@ -68,7 +69,7 @@ func (mr *MovieRepository) GetMovie(ctx context.Context, id uuid.UUID) (model.Mo
 	}
 	movie := model.MovieWithGenre{
 		Movie: model.Movie{
-			ID:            m.ID.String(),
+			ID:            m.ID,
 			Title:         m.Title.String,
 			Description:   m.Description.String,
 			PosterImage:   m.PosterImage.String,
@@ -91,39 +92,29 @@ func (mr *MovieRepository) CreateMovie(
 	// deal with image management later
 	// deal with transaction later if seem fit
 
-	m, mErr := mr.queries.CreateMovie(ctx, movie_resevation.CreateMovieParams{
-		Title: sql.NullString{
-			String: params.Title,
-			Valid:  true,
-		},
-		Description: sql.NullString{
-			String: params.Description,
-			Valid:  true,
-		},
-		PosterImage: sql.NullString{
-			String: params.PosterImage,
-			Valid:  true,
-		},
-		PosterExt: sql.NullString{
-			String: params.PosterExt,
-			Valid:  true,
-		},
-		ReleaseDate: sql.NullTime{
-			Time:  time.Now(),
-			Valid: true,
-		},
-		Language: sql.NullString{
-			String: params.Language,
-			Valid:  true,
-		},
-		CountryOrigin: sql.NullString{
-			String: params.CountryOrigin,
-			Valid:  true,
-		},
-	})
+	tx, err := mr.db.BeginTx(ctx, nil)
+	if err != nil {
+		return model.MovieWithGenre{}, err
+	}
+	defer tx.Rollback()
+
+	qtx := mr.queries.WithTx(tx)
+
+	args := movie_resevation.CreateMovieParams{
+		Title:         helpers.StringPointerToNullString(params.Title),
+		Description:   helpers.StringPointerToNullString(params.Description),
+		PosterImage:   helpers.StringPointerToNullString(params.PosterImage),
+		PosterExt:     helpers.StringPointerToNullString(params.PosterExt),
+		Minutes:       helpers.IntPointerToNullInt32(params.Minutes),
+		ReleaseDate:   helpers.TimePointerToNullTime(params.ReleaseDate),
+		Language:      helpers.StringPointerToNullString(params.Language),
+		CountryOrigin: helpers.StringPointerToNullString(params.CountryOrigin),
+	}
+
+	m, mErr := qtx.CreateMovie(ctx, args)
 
 	if mErr != nil {
-		return model.MovieWithGenre{}, mErr
+		return model.MovieWithGenre{}, err
 	}
 
 	for _, genre := range params.Genres {
@@ -137,7 +128,7 @@ func (mr *MovieRepository) CreateMovie(
 				Valid:  true,
 			},
 		}
-		gErr := mr.queries.AddGenreToMovie(ctx, genreMovieRow)
+		gErr := qtx.AddGenreToMovie(ctx, genreMovieRow)
 		if gErr != nil {
 			return model.MovieWithGenre{}, gErr
 		}
@@ -159,14 +150,14 @@ func (mr *MovieRepository) UpdateMovie(
 
 	args := movie_resevation.UpdateMovieParams{
 		ID:            id,
-		Title:         sql.NullString{String: params.Title, Valid: params.Title != ""},
-		Description:   sql.NullString{String: params.Description, Valid: params.Description != ""},
-		PosterImage:   sql.NullString{String: params.PosterImage, Valid: params.PosterImage != ""},
-		PosterExt:     sql.NullString{String: params.PosterExt, Valid: params.PosterExt != ""},
-		Minutes:       sql.NullInt32{Int32: int32(params.Minutes), Valid: params.Minutes != 0},
-		ReleaseDate:   sql.NullTime{Time: params.ReleaseTime, Valid: !params.ReleaseTime.IsZero()},
-		Language:      sql.NullString{String: params.Language, Valid: params.Language != ""},
-		CountryOrigin: sql.NullString{String: params.CountryOrigin, Valid: params.CountryOrigin != ""},
+		Title:         helpers.StringPointerToNullString(params.Title),
+		Description:   helpers.StringPointerToNullString(params.Description),
+		PosterImage:   helpers.StringPointerToNullString(params.PosterImage),
+		PosterExt:     helpers.StringPointerToNullString(params.PosterExt),
+		Minutes:       helpers.IntPointerToNullInt32(params.Minutes),
+		ReleaseDate:   helpers.TimePointerToNullTime(params.ReleaseDate),
+		Language:      helpers.StringPointerToNullString(params.Language),
+		CountryOrigin: helpers.StringPointerToNullString(params.CountryOrigin),
 	}
 
 	// Update Movie
@@ -176,38 +167,42 @@ func (mr *MovieRepository) UpdateMovie(
 	}
 
 	// Add Genres
-	for _, genre := range params.AddGenres {
-		addGenreRow := movie_resevation.AddGenreToMovieParams{
-			MovieID: uuid.NullUUID{
-				UUID:  id,
-				Valid: true,
-			},
-			Title: sql.NullString{
-				String: genre,
-				Valid:  true,
-			},
-		}
-		gErr := mr.queries.AddGenreToMovie(ctx, addGenreRow)
-		if gErr != nil {
-			return model.MovieWithGenre{}, gErr
+	if len(params.AddGenres) > 0 {
+		for _, genre := range params.AddGenres {
+			addGenreRow := movie_resevation.AddGenreToMovieParams{
+				MovieID: uuid.NullUUID{
+					UUID:  id,
+					Valid: true,
+				},
+				Title: sql.NullString{
+					String: genre,
+					Valid:  true,
+				},
+			}
+			gErr := mr.queries.AddGenreToMovie(ctx, addGenreRow)
+			if gErr != nil {
+				return model.MovieWithGenre{}, gErr
+			}
 		}
 	}
 
 	// Remove Genres
-	for _, genre := range params.RemoveGenres {
-		removeGenreRow := movie_resevation.RemoveGenreFromMovieParams{
-			MovieID: uuid.NullUUID{
-				UUID:  id,
-				Valid: true,
-			},
-			Title: sql.NullString{
-				String: genre,
-				Valid:  true,
-			},
-		}
-		gErr := mr.queries.RemoveGenreFromMovie(ctx, removeGenreRow)
-		if gErr != nil {
-			return model.MovieWithGenre{}, gErr
+	if len(params.RemoveGenres) > 0 {
+		for _, genre := range params.RemoveGenres {
+			removeGenreRow := movie_resevation.RemoveGenreFromMovieParams{
+				MovieID: uuid.NullUUID{
+					UUID:  id,
+					Valid: true,
+				},
+				Title: sql.NullString{
+					String: genre,
+					Valid:  true,
+				},
+			}
+			gErr := mr.queries.RemoveGenreFromMovie(ctx, removeGenreRow)
+			if gErr != nil {
+				return model.MovieWithGenre{}, gErr
+			}
 		}
 	}
 
