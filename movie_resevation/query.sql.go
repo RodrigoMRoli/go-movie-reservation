@@ -47,9 +47,9 @@ func (q *Queries) CreateGenre(ctx context.Context, title sql.NullString) (MvGenr
 
 const createMovie = `-- name: CreateMovie :one
 INSERT INTO mv_movie
-(title, description, poster_image, poster_ext, release_date, language, country_origin)
+(title, description, poster_image, poster_ext, minutes, release_date, language, country_origin)
 VALUES
-($1, $2, $3, $4, $5, $6, $7)
+($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id, title, description, poster_image, poster_ext, minutes, release_date, language, country_origin
 `
 
@@ -58,6 +58,7 @@ type CreateMovieParams struct {
 	Description   sql.NullString `json:"description"`
 	PosterImage   sql.NullString `json:"poster_image"`
 	PosterExt     sql.NullString `json:"poster_ext"`
+	Minutes       sql.NullInt32  `json:"minutes"`
 	ReleaseDate   sql.NullTime   `json:"release_date"`
 	Language      sql.NullString `json:"language"`
 	CountryOrigin sql.NullString `json:"country_origin"`
@@ -69,6 +70,7 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (MvMov
 		arg.Description,
 		arg.PosterImage,
 		arg.PosterExt,
+		arg.Minutes,
 		arg.ReleaseDate,
 		arg.Language,
 		arg.CountryOrigin,
