@@ -18,22 +18,22 @@ func NewMovieUseCase(repository repository.MovieRepository) MovieUseCase {
 	}
 }
 
-func (mu *MovieUseCase) GetMovies(ctx *context.Context) ([]model.MovieWithGenre, error) {
+func (mu *MovieUseCase) GetMovies(ctx context.Context) ([]model.MovieWithGenre, error) {
 	return mu.repository.GetMovies(ctx)
 }
 
-func (mu *MovieUseCase) GetMovie(ctx *context.Context, id uuid.UUID) (model.MovieWithGenre, error) {
+func (mu *MovieUseCase) GetMovie(ctx context.Context, id uuid.UUID) (model.MovieWithGenre, error) {
 	return mu.repository.GetMovie(ctx, id)
 }
 
-func (mu *MovieUseCase) CreateMovie(ctx *context.Context, params model.CreateMovieInput) (model.MovieWithGenre, error) {
+func (mu *MovieUseCase) CreateMovie(ctx context.Context, params model.CreateMovieInput) (model.MovieWithGenre, error) {
 	return mu.repository.CreateMovie(ctx, params)
 }
 
-func (mu *MovieUseCase) UpdateMovie(ctx *context.Context, id uuid.UUID, params model.CreateMovieInput) (model.MovieWithGenre, error) {
+func (mu *MovieUseCase) UpdateMovie(ctx context.Context, id uuid.UUID, params model.UpdateMovieInput) (model.MovieWithGenre, error) {
 	return mu.repository.UpdateMovie(ctx, id, params)
 }
 
-func (mu *MovieUseCase) DeleteMovie(ctx *context.Context, id uuid.UUID) error {
+func (mu *MovieUseCase) DeleteMovie(ctx context.Context, id uuid.UUID) error {
 	return mu.repository.DeleteMovie(ctx, id)
 }

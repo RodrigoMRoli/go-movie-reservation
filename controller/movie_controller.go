@@ -21,7 +21,7 @@ func NewMovieController(movieUseCase usecase.MovieUseCase) movieController {
 
 func (mc *movieController) GetMovies(c *gin.Context) {
 	ctx := c.Request.Context()
-	movies, err := mc.movieUseCase.GetMovies(&ctx)
+	movies, err := mc.movieUseCase.GetMovies(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -50,7 +50,7 @@ func (mc *movieController) GetMovie(c *gin.Context) {
 		return
 	}
 
-	movie, err := mc.movieUseCase.GetMovie(&ctx, id)
+	movie, err := mc.movieUseCase.GetMovie(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -69,7 +69,7 @@ func (mc *movieController) CreateMovie(c *gin.Context) {
 		return
 	}
 
-	newMovie, err := mc.movieUseCase.CreateMovie(&ctx, input)
+	newMovie, err := mc.movieUseCase.CreateMovie(ctx, input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -98,7 +98,7 @@ func (mc *movieController) UpdateMovie(c *gin.Context) {
 		return
 	}
 
-	var input model.CreateMovieInput
+	var input model.UpdateMovieInput
 	if err := c.BindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -106,7 +106,7 @@ func (mc *movieController) UpdateMovie(c *gin.Context) {
 		return
 	}
 
-	newMovie, err := mc.movieUseCase.UpdateMovie(&ctx, id, input)
+	newMovie, err := mc.movieUseCase.UpdateMovie(ctx, id, input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -135,7 +135,7 @@ func (mc *movieController) DeleteMovie(c *gin.Context) {
 		return
 	}
 
-	deleteErr := mc.movieUseCase.DeleteMovie(&ctx, id)
+	deleteErr := mc.movieUseCase.DeleteMovie(ctx, id)
 	if deleteErr != nil {
 		c.JSON(http.StatusInternalServerError, deleteErr)
 		return

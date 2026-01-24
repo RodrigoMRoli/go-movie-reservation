@@ -74,7 +74,7 @@ func TestGetMovie_Success(t *testing.T) {
 
 	// Act
 	ctx := context.Background()
-	result, err := repo.GetMovie(&ctx, movieID)
+	result, err := repo.GetMovie(ctx, movieID)
 
 	// Assert
 	assert.NoError(t, err)
