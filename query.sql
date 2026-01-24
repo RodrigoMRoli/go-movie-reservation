@@ -62,11 +62,11 @@ RETURNING *;
 INSERT INTO mv_movie_genres 
 (movie_id, genre_id)
 VALUES
-($1, $2);
+($1, (SELECT g.id FROM mv_genre g WHERE g.title = $2));
 
 -- name: RemoveGenreFromMovie :exec
 DELETE FROM mv_movie_genres
-WHERE movie_id = $1 AND genre_id = $2;
+WHERE movie_id = $1 AND genre_id = (SELECT g.id FROM mv_genre g WHERE g.title = $2);
 
 -- name: DeleteGenre :exec
 DELETE FROM mv_genre

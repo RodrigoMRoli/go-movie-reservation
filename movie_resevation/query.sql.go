@@ -17,16 +17,16 @@ const addGenreToMovie = `-- name: AddGenreToMovie :exec
 INSERT INTO mv_movie_genres 
 (movie_id, genre_id)
 VALUES
-($1, $2)
+($1, (SELECT g.id FROM mv_genre g WHERE g.title = $2))
 `
 
 type AddGenreToMovieParams struct {
-	MovieID uuid.NullUUID `json:"movie_id"`
-	GenreID uuid.NullUUID `json:"genre_id"`
+	MovieID uuid.NullUUID  `json:"movie_id"`
+	Title   sql.NullString `json:"title"`
 }
 
 func (q *Queries) AddGenreToMovie(ctx context.Context, arg AddGenreToMovieParams) error {
-	_, err := q.db.ExecContext(ctx, addGenreToMovie, arg.MovieID, arg.GenreID)
+	_, err := q.db.ExecContext(ctx, addGenreToMovie, arg.MovieID, arg.Title)
 	return err
 }
 
@@ -218,16 +218,16 @@ func (q *Queries) GetMovies(ctx context.Context) ([]GetMoviesRow, error) {
 
 const removeGenreFromMovie = `-- name: RemoveGenreFromMovie :exec
 DELETE FROM mv_movie_genres
-WHERE movie_id = $1 AND genre_id = $2
+WHERE movie_id = $1 AND genre_id = (SELECT g.id FROM mv_genre g WHERE g.title = $2)
 `
 
 type RemoveGenreFromMovieParams struct {
-	MovieID uuid.NullUUID `json:"movie_id"`
-	GenreID uuid.NullUUID `json:"genre_id"`
+	MovieID uuid.NullUUID  `json:"movie_id"`
+	Title   sql.NullString `json:"title"`
 }
 
 func (q *Queries) RemoveGenreFromMovie(ctx context.Context, arg RemoveGenreFromMovieParams) error {
-	_, err := q.db.ExecContext(ctx, removeGenreFromMovie, arg.MovieID, arg.GenreID)
+	_, err := q.db.ExecContext(ctx, removeGenreFromMovie, arg.MovieID, arg.Title)
 	return err
 }
 

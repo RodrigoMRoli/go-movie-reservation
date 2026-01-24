@@ -2,11 +2,9 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
-type CreateMovieInput struct {
+type MovieInput struct {
 	Title         string
 	Description   string
 	PosterImage   string
@@ -15,5 +13,15 @@ type CreateMovieInput struct {
 	ReleaseTime   time.Time
 	Language      string
 	CountryOrigin string
-	GenreIDs      []uuid.UUID
+}
+
+type CreateMovieInput struct {
+	MovieInput
+	Genres []string
+}
+
+type UpdateMovieInput struct {
+	MovieInput
+	AddGenres    []string
+	RemoveGenres []string
 }
