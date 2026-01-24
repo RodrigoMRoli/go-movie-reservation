@@ -1,0 +1,41 @@
+services:
+  movie-api:
+    container_name: movie-api
+    build:
+      context: ../
+      dockerfile: services/movie-api/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - movie-db
+    environment:
+      PORT: 8080
+      GIN_MODE: release
+      DB_HOST: movie-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: movies_db
+    networks:
+      - cinema-network
+
+  movie-db:
+    container_name: movie-db
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: movies_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_movie_data:/var/lib/postgresql/data
+    networks:
+      - cinema-network
+
+volumes:
+  postgres_movie_data:
+
+networks:
+  cinema-network:
+    driver: bridge
