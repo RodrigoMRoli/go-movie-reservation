@@ -5,43 +5,41 @@ import (
 	"database/sql"
 	"fmt"
 	"go-movie-reservation/movie_resevation"
+	// Importe o pacote gerado pelo sqlc
 )
 
+// Store define todas as funções de banco de dados disponíveis
+// Ela "herda" a interface Querier (gerada pelo sqlc) e adiciona ExecTx
 type Store interface {
-	movie_resevation.Querier // Interface gerada pelo sqlc que tem todos os métodos (CreateMovie, etc)
-	CreateMovieWithGenre(ctx context.Context, arg movie_resevation.CreateMovieParams) error
+	movie_resevation.Querier
+	ExecTx(ctx context.Context, fn func(movie_resevation.Querier) error) error
 }
 
+// SQLStore é a implementação real
 type SQLStore struct {
 	*movie_resevation.Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *SQLStore {
+func NewStore(db *sql.DB) Store {
 	return &SQLStore{
 		db:      db,
-		Queries: movie_resevation.New(db), // Função gerada pelo sqlc
+		Queries: movie_resevation.New(db),
 	}
 }
 
-// ExecTx é uma função auxiliar para executar qualquer coisa dentro de uma transação
-func (store *SQLStore) execTx(ctx context.Context, fn func(*movie_resevation.Queries) error) error {
-	// 1. Inicia a transação no banco
+// ExecTx executa uma função dentro de uma transação do banco
+func (store *SQLStore) ExecTx(ctx context.Context, fn func(movie_resevation.Querier) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 
-	// 2. Cria uma nova instância de Queries que usa ESSA transação
 	q := movie_resevation.New(tx)
-
-	// 3. Roda a função que passamos (nossa lógica de negócio)
 	err = fn(q)
-
-	// 4. Decide se faz Commit ou Rollback
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr) // Erro duplo (na lógica e no rollback)
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
 		}
 		return err
 	}

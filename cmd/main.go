@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"go-movie-reservation/controller"
 	"go-movie-reservation/db"
-	"go-movie-reservation/movie_resevation"
-	"go-movie-reservation/repository"
+	"go-movie-reservation/service"
 	"go-movie-reservation/usecase"
 
 	"github.com/gin-gonic/gin"
@@ -23,13 +22,13 @@ func main() {
 
 	defer database.Close()
 
-	queries := movie_resevation.New(database)
+	store := db.NewStore(database)
 
-	// Repositories
-	MovieRepository := repository.NewMovieRepository(queries)
+	// Services
+	MoviceService := service.NewMovieService(store)
 
 	// Usecases
-	MovieUseCase := usecase.NewMovieUseCase(MovieRepository)
+	MovieUseCase := usecase.NewMovieUseCase(MoviceService)
 
 	// Controllers
 	MovieController := controller.NewMovieController(MovieUseCase)
