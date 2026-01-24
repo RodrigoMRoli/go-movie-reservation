@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"context"
-	"go-movie/model"
-	"go-movie/service"
 
 	"github.com/google/uuid"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/model"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/service"
 )
 
 type MovieUseCase struct {

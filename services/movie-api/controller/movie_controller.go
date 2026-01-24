@@ -1,12 +1,12 @@
 package controller
 
 import (
-	"go-movie/model"
-	"go-movie/usecase"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/model"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/usecase"
 )
 
 type movieController struct {

@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"database/sql"
-	"go-movie/db"
-	"go-movie/helpers"
-	"go-movie/model"
-	"go-movie/movie_resevation"
 
 	"github.com/google/uuid"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/db"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/helpers"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/model"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/movie_resevation"
 )
 
 type MovieService struct {

@@ -7,10 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"go-movie/model"
-	"go-movie/movie_resevation"
-
 	"github.com/google/uuid"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/model"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/movie_resevation"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

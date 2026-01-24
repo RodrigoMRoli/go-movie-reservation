@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"go-movie/movie_resevation"
+
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/movie_resevation"
 )
 
 type Store interface {

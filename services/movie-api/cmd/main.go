@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"go-movie/controller"
-	"go-movie/db"
-	"go-movie/service"
-	"go-movie/usecase"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/controller"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/db"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/service"
+	"github.com/rodrigomroli/go-movie-reservation/services/movie-api/usecase"
 )
 
 func main() {
