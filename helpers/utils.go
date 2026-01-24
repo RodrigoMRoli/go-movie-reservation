@@ -25,3 +25,24 @@ func TimePointerToNullTime(t *time.Time) sql.NullTime {
 	}
 	return sql.NullTime{Time: *t, Valid: true}
 }
+
+func SafeString(ptr *string) string {
+	if ptr == nil {
+		return ""
+	}
+	return *ptr
+}
+
+func SafeInt(ptr *int) int {
+	if ptr == nil {
+		return 0
+	}
+	return *ptr
+}
+
+func SafeTime(ptr *time.Time) time.Time {
+	if ptr == nil {
+		return time.Time{}
+	}
+	return *ptr
+}

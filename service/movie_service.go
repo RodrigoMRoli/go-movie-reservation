@@ -89,6 +89,7 @@ func (ms *MovieService) CreateMovie(
 ) (model.MovieWithGenre, error) {
 
 	var resultID uuid.UUID
+	var newMovie model.MovieWithGenre
 
 	err := ms.store.ExecTx(ctx, func(tx movie_resevation.Querier) error {
 
@@ -109,6 +110,10 @@ func (ms *MovieService) CreateMovie(
 		}
 
 		resultID = m.ID
+		genres := []string{}
+		if len(params.Genres) > 0 {
+			genres = make([]string, 0, len(params.Genres))
+		}
 
 		for _, genre := range params.Genres {
 			genreMovieRow := movie_resevation.AddGenreToMovieParams{
@@ -118,6 +123,22 @@ func (ms *MovieService) CreateMovie(
 			if err := tx.AddGenreToMovie(ctx, genreMovieRow); err != nil {
 				return err
 			}
+			genres = append(genres, genre)
+		}
+
+		newMovie = model.MovieWithGenre{
+			Movie: model.Movie{
+				ID:            resultID,
+				Title:         helpers.SafeString(params.Title),
+				Description:   helpers.SafeString(params.Description),
+				PosterImage:   helpers.SafeString(params.PosterImage),
+				PosterExt:     helpers.SafeString(params.PosterExt),
+				Minutes:       helpers.SafeInt(params.Minutes),
+				ReleaseDate:   helpers.SafeTime(params.ReleaseDate),
+				Language:      helpers.SafeString(params.Language),
+				CountryOrigin: helpers.SafeString(params.CountryOrigin),
+			},
+			Genres: genres,
 		}
 
 		return nil
@@ -125,21 +146,6 @@ func (ms *MovieService) CreateMovie(
 
 	if err != nil {
 		return model.MovieWithGenre{}, err
-	}
-
-	newMovie := model.MovieWithGenre{
-		Movie: model.Movie{
-			ID:            resultID,
-			Title:         *params.Title,
-			Description:   *params.Description,
-			PosterImage:   *params.PosterImage,
-			PosterExt:     *params.PosterExt,
-			Minutes:       *params.Minutes,
-			ReleaseDate:   *params.ReleaseDate,
-			Language:      *params.Language,
-			CountryOrigin: *params.CountryOrigin,
-		},
-		Genres: params.Genres,
 	}
 
 	return newMovie, nil
