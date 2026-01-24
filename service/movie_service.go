@@ -153,7 +153,7 @@ func (ms *MovieService) UpdateMovie(
 
 	var movie model.MovieWithGenre
 
-	err := ms.store.ExecTx(ctx, func(q movie_resevation.Querier) error {
+	err := ms.store.ExecTx(ctx, func(tx movie_resevation.Querier) error {
 
 		args := movie_resevation.UpdateMovieParams{
 			ID:            id,
@@ -168,7 +168,7 @@ func (ms *MovieService) UpdateMovie(
 		}
 
 		// Update Movie
-		err := ms.store.UpdateMovie(ctx, args)
+		err := tx.UpdateMovie(ctx, args)
 		if err != nil {
 			return err
 		}
@@ -186,7 +186,7 @@ func (ms *MovieService) UpdateMovie(
 						Valid:  true,
 					},
 				}
-				err := ms.store.AddGenreToMovie(ctx, addGenreRow)
+				err := tx.AddGenreToMovie(ctx, addGenreRow)
 				if err != nil {
 					return err
 				}
@@ -206,19 +206,32 @@ func (ms *MovieService) UpdateMovie(
 						Valid:  true,
 					},
 				}
-				err := ms.store.RemoveGenreFromMovie(ctx, removeGenreRow)
+				err := tx.RemoveGenreFromMovie(ctx, removeGenreRow)
 				if err != nil {
 					return err
 				}
 			}
 		}
 
-		m, err := ms.GetMovie(ctx, id)
+		m, err := tx.GetMovie(ctx, id)
 		if err != nil {
 			return err
 		}
 
-		movie = m
+		movie = model.MovieWithGenre{
+			Movie: model.Movie{
+				ID:            id,
+				Title:         m.Title.String,
+				Description:   m.Description.String,
+				PosterImage:   m.PosterImage.String,
+				PosterExt:     m.PosterExt.String,
+				Minutes:       int(m.Minutes.Int32),
+				ReleaseDate:   m.ReleaseDate.Time,
+				Language:      m.Language.String,
+				CountryOrigin: m.CountryOrigin.String,
+			},
+			Genres: m.Genres,
+		}
 		return nil
 	})
 
