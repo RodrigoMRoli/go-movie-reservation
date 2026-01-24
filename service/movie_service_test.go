@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"go-movie-reservation/model"
-	"go-movie-reservation/movie_resevation"
+	"go-movie/model"
+	"go-movie/movie_resevation"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

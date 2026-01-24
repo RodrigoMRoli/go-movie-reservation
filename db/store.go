@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"go-movie-reservation/movie_resevation"
+	"go-movie/movie_resevation"
 )
 
 type Store interface {

@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"go-movie-reservation/controller"
-	"go-movie-reservation/db"
-	"go-movie-reservation/service"
-	"go-movie-reservation/usecase"
+	"go-movie/controller"
+	"go-movie/db"
+	"go-movie/service"
+	"go-movie/usecase"
 
 	"github.com/gin-gonic/gin"
 )

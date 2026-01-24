@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"database/sql"
-	"go-movie-reservation/db"
-	"go-movie-reservation/helpers"
-	"go-movie-reservation/model"
-	"go-movie-reservation/movie_resevation"
+	"go-movie/db"
+	"go-movie/helpers"
+	"go-movie/model"
+	"go-movie/movie_resevation"
 
 	"github.com/google/uuid"
 )

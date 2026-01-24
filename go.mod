@@ -1,4 +1,4 @@
-module go-movie-reservation
+module go-movie
 
 go 1.25.5
 

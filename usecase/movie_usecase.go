@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
-	"go-movie-reservation/model"
-	"go-movie-reservation/service"
+	"go-movie/model"
+	"go-movie/service"
 
 	"github.com/google/uuid"
 )

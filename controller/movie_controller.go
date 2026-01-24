@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"go-movie-reservation/model"
-	"go-movie-reservation/usecase"
+	"go-movie/model"
+	"go-movie/usecase"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
