@@ -2,7 +2,7 @@ go 1.25.5
 
 use (
 	./pkg
-	./services/login-api
+	./services/auth-api
 	./services/movie-api
 	./services/reservation-api
 )
