@@ -90,7 +90,7 @@ func (ms *MovieService) CreateMovie(
 
 	var resultID uuid.UUID
 
-	err := ms.store.ExecTx(ctx, func(q movie_resevation.Querier) error {
+	err := ms.store.ExecTx(ctx, func(tx movie_resevation.Querier) error {
 
 		args := movie_resevation.CreateMovieParams{
 			Title:         helpers.StringPointerToNullString(params.Title),
@@ -103,7 +103,7 @@ func (ms *MovieService) CreateMovie(
 			CountryOrigin: helpers.StringPointerToNullString(params.CountryOrigin),
 		}
 
-		m, err := q.CreateMovie(ctx, args)
+		m, err := tx.CreateMovie(ctx, args)
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func (ms *MovieService) CreateMovie(
 				MovieID: uuid.NullUUID{UUID: m.ID, Valid: true},
 				Title:   sql.NullString{String: genre, Valid: true},
 			}
-			if err := q.AddGenreToMovie(ctx, genreMovieRow); err != nil {
+			if err := tx.AddGenreToMovie(ctx, genreMovieRow); err != nil {
 				return err
 			}
 		}
