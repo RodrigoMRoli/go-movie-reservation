@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	_ "github.com/lib/pq"
 )
@@ -21,8 +20,6 @@ type Config struct {
 }
 
 func ConnectDB() (*sql.DB, error) {
-	godotenv.Load()
-
 	var cfg Config
 	envErr := envconfig.Process("", &cfg)
 	if envErr != nil {

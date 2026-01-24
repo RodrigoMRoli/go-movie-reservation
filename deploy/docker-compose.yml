@@ -1,7 +1,6 @@
 services:
-  movie-api:
-    env_file:
-      - ../.env
+  movie_api:
+    env_file: ../.env
     container_name: movie-api
     build:
       context: ../
@@ -9,9 +8,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - movie-db
+      - movie_db
     environment:
-      GIN_MODE: release
+      GIN_MODE: ${GIN_MODE}
       DB_HOST: ${MOVIE_DB_HOST}
       DB_PORT: ${MOVIE_DB_PORT}
       DB_USER: ${MOVIE_DB_USER}
@@ -21,10 +20,9 @@ services:
     networks:
       - cinema-network
 
-  movie-db:
-    env_file:
-      - ../.env
-    container_name: movie-db
+  movie_db:
+    env_file: ../.env
+    container_name: movie_db
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: ${MOVIE_DB_USER}
