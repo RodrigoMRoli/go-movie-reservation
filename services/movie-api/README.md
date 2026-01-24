@@ -1,8 +1,8 @@
-# Movie Reservation API
+# Movies API
 
 ## Greeting
 
-Welcome to the Movie Reservation API! This is a Go-based backend service that provides endpoints for managing movie reservations. The API is built with clean architecture principles and uses PostgreSQL for data persistence.
+Welcome to the Movies API! This is a Go-based backend service that provides endpoints for managing movie reservations. The API is built with clean architecture principles and uses PostgreSQL for data persistence.
 
 ## Installation
 
