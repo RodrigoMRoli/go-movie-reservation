@@ -7,7 +7,7 @@ COPY go.work.sum .
 COPY pkg/go.mod pkg/go.mod
 
 COPY services/movie-api/go.mod services/movie-api/go.mod
-COPY services/login-api/go.mod services/login-api/go.mod
+COPY services/auth-api/go.mod services/auth-api/go.mod
 COPY services/reservation-api/go.mod services/reservation-api/go.mod
 
 COPY services/movie-api/go.sum services/movie-api/go.sum

@@ -35,8 +35,48 @@ services:
     networks:
       - cinema-network
 
+  auth-api:
+    container_name: auth-api
+    build:
+      context: ../
+      dockerfile: services/auth-api/Dockerfile
+    ports:
+      - "8081:8080"
+    depends_on:
+      - auth-db
+    env_file:
+      - ../.env
+    environment:
+      PORT: 8080
+      GIN_MODE: release
+      DB_HOST: ${AUTH_DB_HOST}
+      DB_PORT: ${AUTH_DB_PORT}
+      DB_USER: ${AUTH_DB_USER}
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_NAME: ${AUTH_DB_NAME}
+      JWT_SECRET: ${AUTH_JWT_SECRET}
+    networks:
+      - cinema-network
+
+  auth-db:
+    container_name: auth-db
+    image: postgres:15-alpine
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - cinema-network
+
 volumes:
   postgres_movie_data:
+  postgres_auth_data:
 
 networks:
   cinema-network:
