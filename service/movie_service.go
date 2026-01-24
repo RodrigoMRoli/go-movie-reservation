@@ -153,7 +153,7 @@ func (ms *MovieService) UpdateMovie(
 
 	var movie model.MovieWithGenre
 
-	err := ms.store.ExecTx(ctx, func(tx movie_resevation.Querier) error {
+	txErr := ms.store.ExecTx(ctx, func(tx movie_resevation.Querier) error {
 
 		args := movie_resevation.UpdateMovieParams{
 			ID:            id,
@@ -213,30 +213,16 @@ func (ms *MovieService) UpdateMovie(
 			}
 		}
 
-		m, err := tx.GetMovie(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		movie = model.MovieWithGenre{
-			Movie: model.Movie{
-				ID:            id,
-				Title:         m.Title.String,
-				Description:   m.Description.String,
-				PosterImage:   m.PosterImage.String,
-				PosterExt:     m.PosterExt.String,
-				Minutes:       int(m.Minutes.Int32),
-				ReleaseDate:   m.ReleaseDate.Time,
-				Language:      m.Language.String,
-				CountryOrigin: m.CountryOrigin.String,
-			},
-			Genres: m.Genres,
-		}
 		return nil
 	})
 
+	if txErr != nil {
+		return model.MovieWithGenre{}, txErr
+	}
+
+	movie, err := ms.GetMovie(ctx, id)
 	if err != nil {
-		return model.MovieWithGenre{}, err
+		return model.MovieWithGenre{}, txErr
 	}
 
 	return movie, nil
