@@ -19,7 +19,7 @@ services:
       context: ../
       dockerfile: services/movie-api/Dockerfile
     ports:
-      - "8080:8080" # TODO: Remove after stabilize nginx
+      - "8080:${MOVIE_API_PORT}" # TODO: Remove after stabilize nginx
     depends_on:
       - movie-db
     environment:
@@ -29,7 +29,7 @@ services:
       DB_USER: ${MOVIE_DB_USER}
       DB_PASSWORD: ${MOVIE_DB_PASSWORD}
       DB_NAME: ${MOVIE_DB_NAME}
-      PORT: 8080
+      PORT: ${MOVIE_API_PORT}
     networks:
       - cinema-network
 
@@ -54,13 +54,13 @@ services:
       context: ../
       dockerfile: services/auth-api/Dockerfile
     ports:
-      - "8081:8080" # TODO: Remove after stabilize nginx
+      - "8081:${AUTH_API_PORT}" # TODO: Remove after stabilize nginx
     depends_on:
       - auth-db
     env_file:
       - ../.env
     environment:
-      PORT: 8080
+      PORT: ${AUTH_API_PORT}
       GIN_MODE: release
       DB_HOST: ${AUTH_DB_HOST}
       DB_PORT: ${AUTH_DB_PORT}
