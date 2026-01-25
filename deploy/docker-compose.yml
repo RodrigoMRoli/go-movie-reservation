@@ -1,11 +1,15 @@
 services:
   gateway:
-    image: nginx:alpine
+    build: .
     container_name: api-gateway
+    environment:
+      - NGINX_PORT=${NGINX_PORT}
+      - AUTH_HOST=${AUTH_API_HOST}
+      - AUTH_PORT=${AUTH_API_PORT}
+      - MOVIE_HOST=${MOVIE_API_HOST}
+      - MOVIE_PORT=${MOVIE_API_PORT}
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - "80:${NGINX_PORT}"
     depends_on:
       - movie-api
       - auth-api

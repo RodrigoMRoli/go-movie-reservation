@@ -8,7 +8,7 @@ http {
     default_type application/json;
 
     server {
-        listen 80;
+        listen ${NGINX_PORT};
         
         proxy_intercept_errors on;
 
@@ -16,14 +16,14 @@ http {
         error_page 500 502 503 504 = @50x_json;
 
         location /auth/ {
-            proxy_pass http://auth-api:8081/;
+            proxy_pass http://${AUTH_HOST}:${AUTH_PORT}/;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
 
         location /movies/ {
-            proxy_pass http://movie-api:8080/;
+            proxy_pass http://${MOVIE_HOST}:${MOVIE_PORT}/;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
