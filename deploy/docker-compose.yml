@@ -1,14 +1,27 @@
 services:
-  movie_api:
+  gateway:
+    image: nginx:alpine
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - movie-api
+      - auth-api
+    networks:
+      - cinema-network
+
+  movie-api:
     env_file: ../.env
     container_name: movie-api
     build:
       context: ../
       dockerfile: services/movie-api/Dockerfile
     ports:
-      - "8080:8080"
+      - "8080:8080" # TODO: Remove after stabilize nginx
     depends_on:
-      - movie_db
+      - movie-db
     environment:
       GIN_MODE: ${GIN_MODE}
       DB_HOST: ${MOVIE_DB_HOST}
@@ -20,9 +33,9 @@ services:
     networks:
       - cinema-network
 
-  movie_db:
+  movie-db:
     env_file: ../.env
-    container_name: movie_db
+    container_name: movie-db
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: ${MOVIE_DB_USER}
@@ -41,7 +54,7 @@ services:
       context: ../
       dockerfile: services/auth-api/Dockerfile
     ports:
-      - "8081:8080"
+      - "8081:8080" # TODO: Remove after stabilize nginx
     depends_on:
       - auth-db
     env_file:
