@@ -29,6 +29,6 @@ CREATE TABLE user_roles (
         
     CONSTRAINT fk_role
         FOREIGN KEY (role_id) 
-        REFERENCES role(id) 
+        REFERENCES roles(id) 
         ON DELETE CASCADE
 );

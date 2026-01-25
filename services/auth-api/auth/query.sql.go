@@ -9,39 +9,23 @@ import (
 	"context"
 )
 
-const getUsers = `-- name: GetUsers :many
-SELECT id, email, password, salt_rounds, first_name, last_name, birthdate, created_at, updated_at FROM users
+const getUser = `-- name: GetUser :one
+SELECT id, email, password, salt_rounds, first_name, last_name, birthdate, created_at, updated_at FROM users WHERE email = $1
 `
 
-func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.Email,
-			&i.Password,
-			&i.SaltRounds,
-			&i.FirstName,
-			&i.LastName,
-			&i.Birthdate,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetUser(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Password,
+		&i.SaltRounds,
+		&i.FirstName,
+		&i.LastName,
+		&i.Birthdate,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
